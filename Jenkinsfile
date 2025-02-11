@@ -1,6 +1,7 @@
 node {
+    
     stage('Build') {
-        docker.image('python:2-alpine').inside() {
+        docker.image('python:latest').inside() {
             sh 'python -m py_compile sources/add2vals.py sources/calc.py'
         }
     }
@@ -18,12 +19,14 @@ node {
     }
 
     stage('Deploy') {
-        docker.image('cdrx/pyinstaller-linux:python2').inside() {
+        docker.image('python:latest').inside('-u root') {
+            sh 'pip install pyinstaller'
             sh 'pyinstaller --onefile sources/add2vals.py'
         }
+        
+        archiveArtifacts 'dist/add2vals'
 
-        success {
-            archiveArtifacts 'dist/add2vals'
-        }
+        echo 'Pipeline has finished succesfully.'
+        sleep time:1, unit: 'MINUTES'
     }
 }
